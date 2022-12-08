@@ -139,6 +139,72 @@ Ran 1 test in 0.001s
 
 ### 2.1. 設定ファイル
 
+`pytest`の実行時のオプションや定義することのできる設定ファイルを紹介します。  
+これらの設定ファイルは**リポジトリのルート**または**tests フォルダ**上に定義されます。
+
+- `pytest.ini`: 最も優先で読まれるファイルだが個人的には後述する`pyproject.toml`を定義する事が多い。
+
+  ```ini
+  # 例
+  [pytest]
+  minversion = 6.0
+  addopts = -ra -q
+  testpaths =
+      tests
+      integration
+  ```
+
+- `pyproject.toml`: リンターやフォーマッターの設定ファイルの兼ね合いでこれをよく使います。`tool.pytest.ini_options`が定義されていると読まれます。
+
+  ```toml
+  # 例えばblack等を含めた設定ファイルを書くことが出来ます
+  [tool.black]
+  line-length = 120
+
+  [tool.pytest.ini_options]
+  minversion = "6.0"
+  addopts = "-ra -q"
+  testpaths = [
+      "tests",
+      "integration",
+  ]
+  ```
+
+- `tox.ini`: `tox`のようなテストツールにも`pytest`の設定を記述することが可能です。
+
+  ```ini
+  # pytest.ini と記法は同じなので移行しやすいですね
+  [pytest]
+  minversion = 6.0
+  addopts = -ra -q
+  testpaths =
+      tests
+      integration
+  ```
+
+- `setup.cfg`: `setup.py`実行時のパラメータなどを記述する設定ファイルです。現在は`pyproject.toml`で事足りるのであまり定義する機会はないかな…。
+
+  ```ini
+  # pyproject.tomlと似た感じです。flake8とかmetadataなどが記載できます。
+  [tool:pytest]
+  minversion = 6.0
+  addopts = -ra -q
+  testpaths =
+      tests
+      integration
+  ```
+
+また、設定ファイルで定義できるオプションをいくつか紹介します。
+
+- `minversion`: `pytest`のバージョンの下限値を指定できます。(そもそも`pipenv`とか`poetry`でバージョン管理したほうが良い)
+- `addopts`: 常に実行したい`pytest`のオプション引数を指定できます。
+- `testpaths`: テスト対象ディレクトリを指定できます。
+- `python_files/python_classes/python_functions`: テスト対象の ファイル/クラス/関数 名を指定できます。(基本いじりません)
+- `markers`: カスタムマーカーの登録ができます。(5. Marksで後述します。)
+
+ここまで説明を受けて、「設定ファイル定義するのめんどくさい」と思った方は正直定義不要だと思います。(なくても`pytest`は十分動いてくれます。)  
+`pytest`をある程度使ってみて、オプション毎回付けるのが面倒くさいとか、特定のファイルをテストしたいといった思いが出てきてからで十分です。
+
 ### 2.2. 実行時オプション
 
 `pytest`を実行する際に、オプション引数を選択することができます。
@@ -155,15 +221,23 @@ positional arguments:
 ```
 
 実行してみると分かりますが、多様なオプション引数があります。  
-今回はその中でもよく使われるオプション引数を紹介します。
+今回はその中でもよく使われるオプション引数をいくつか紹介します。
 
-1. -k オプション
-  - 「`pytest -k "{キーワード}"`」でモジュール名やクラス(関数)名に特定のワードが含まれているものだけをテストする
+- -k オプション:「`pytest -k "{キーワード}"`」でモジュール名やクラス(関数)名に特定のワードが含まれているものだけをテストする。
+  - テストケースが増えてくると活躍します。
+  - `"{キーワード}"`は否定や論理和・積にも対応しています。
 
-    ```py
+    ```sh
+    # test_hoge 以外(キーワードを含まないもの)が実行されます
+    pytest -k "not test_hoge"
+    # test_hoge または test_fuga が実行されます(キーワードを含むもの)
+    pytest -k "test_hoge or test_fuga"
+    # hoge かつ fuga のキーワードを含むものが実行されます
+    pytest -k "hoge and fuga"
     ```
 
-2. 
+- -s オプション:
+- -v オプション:
 
 ## 3. ファイル構成
 
